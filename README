@@ -1,0 +1,25 @@
+Two command-line utilites to decode and encode NMEA sentences/PGNs.
+
+These programs utilise the libmnd library.
+
+Usage:
+
+mndd com|can|ngt [device [speed]]
+  Default Input from stdin, Output to stdout
+  Default decoding is N0183
+  com: N0183 input from com port (ASCII data)
+    (if no device, input from text file/pipe on stdin)
+  ngt: N2000 input from Actisense NGT-1 (Byte aligned binary data)
+    (if no device, input from actisense-serial log file/pipe on stdin)
+  can: N2000 input from SocketCAN (Byte aligned binary data)
+    (if no device, input from candump log file/pipe on stdin)
+
+mnde
+  Data format: [SA>DA,] <PGN>, <parameter>, <parameter>, ...
+    Optional SA>DA pair. <PGN> must be an integer
+    <parameter> fields can be numbers or quoted strings
+    The values "-", "n/a" & "error" can be used for integer fields
+    Blank fields can be used for unavailable or reserved values
+    Lines beginning with '#' are comments and echoed to output
+    Dates should be integers in the form: YYYYMMDD
+    Times should be integers in the form: HHMMSS
