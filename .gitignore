@@ -1,0 +1,10 @@
+*.o
+mndd
+mnde
+.settings
+.cproject
+.project
+/mndd/*
+/mnde/*
+/Debug/
+/Release/
