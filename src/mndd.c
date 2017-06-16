@@ -41,8 +41,7 @@
 #include <linux/can/raw.h>
 #endif
 
-#include "n0183.h"
-#include "n2000.h"
+#include <mnd/mnd.h>
 
 int main(int argc, const char* argv[]) {
 

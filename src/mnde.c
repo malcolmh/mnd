@@ -30,8 +30,7 @@
 #include <string.h>
 #include <regex.h>
 
-#include "n2000.h"
-#include "e2000.h"
+#include <mnd/mnd.h>
 
 #define MaxArgs 100
 
