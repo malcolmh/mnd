@@ -239,10 +239,10 @@ int main(int argc, const char* argv[]) {
         /* candump logfile input */
 
         FILE* in = fdopen(dev, "r");
+
         while (fgets(buf, 1000, in) != NULL) {
           strtok(buf, " ");
-          strtok(NULL, " ");
-          char* header = strtok(NULL, "#");
+          char* header = strtok(NULL, " ");
           unsigned long hdr = strtol(header, NULL, 16);
           E_2000 e2k;
           e2k.dst = 255;
@@ -253,11 +253,11 @@ int main(int argc, const char* argv[]) {
             e2k.pgn &= 0x3ff00;
           }
           e2k.pri = (hdr >> 26) & 0x7;
-          char* body = strtok(NULL, "\n");
+          strtok(NULL, " ");
           e2k.len = 0;
-          for (int i = 0; body[i] != 0; i += 2) {
+          for (char* body = strtok(NULL, " "); body != NULL; body = strtok(NULL, " ")) {
             unsigned int byte = 0;
-            sscanf(&body[i], "%02X", &byte);
+            sscanf(body, "%02X", &byte);
             e2k.msg[e2k.len++] = byte;
           }
           decodeN2000(&e2k, dec);
