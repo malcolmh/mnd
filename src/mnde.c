@@ -50,7 +50,7 @@ int main(int argc, const char* argv[]) {
   regcomp(&hexadec, "^0[xX][0-9a-fA-F]+$", REG_EXTENDED | REG_NOSUB);
   T_2000 args[MaxArgs];
   E_2000 enc;
-  X_2000 txf[32];
+  F_2000 txf[32];
   double farg;
   long iarg;
   bool error = false;
@@ -126,7 +126,7 @@ int main(int argc, const char* argv[]) {
           printf("\n  ");
         }
         printf("\nCAN frames:\n");
-        int nf = framesN2000(&enc, seq++, src, dst, txf);
+        int nf = enframeN2000(&enc, seq++, txf);
         for (int i = 0; i < nf; i++) {
           printf("  ");
           printf("%08X [%d] ", txf[i].hdr, txf[i].len);
@@ -137,7 +137,7 @@ int main(int argc, const char* argv[]) {
         }
         printf("Check decode:\n");
         char dec[4000];
-        printf("%s\n", decodeN2000(&enc, dec));
+        printf("%s\n", interpretN2000(&enc, dec));
         printf("\n");
       } else {
         fprintf(stderr, "Invalid data\n");

@@ -260,7 +260,7 @@ int main(int argc, const char* argv[]) {
             sscanf(body, "%02X", &byte);
             e2k.msg[e2k.len++] = byte;
           }
-          decodeN2000(&e2k, dec);
+          interpretN2000(&e2k, dec);
           if (strlen(dec) > 3)
             printf("%s\n", dec);
         }
