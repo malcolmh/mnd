@@ -54,9 +54,10 @@ typedef struct {
   uint8_t pad2;
   uint8_t pad3;
   uint8_t dat[8];       // Frame bytes
-} F_2000;               // SocketCAN frame
+} S_2000;               // SocketCAN frame
 
-extern char* interpretN2000(E_2000* encmsg, char* d2000);
+uint8_t* deframeN2000(S_2000 frame, E_2000* enc);
+extern char* interpretN2000(E_2000* enc, char* d2000);
 //extern int unpackN2000(int pgn, int len, unsigned char* msg, int nargs, T_2000 args[]);
 
 #endif /* n2000_h */

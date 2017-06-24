@@ -50,7 +50,7 @@ int main(int argc, const char* argv[]) {
   regcomp(&hexadec, "^0[xX][0-9a-fA-F]+$", REG_EXTENDED | REG_NOSUB);
   T_2000 args[MaxArgs];
   E_2000 enc;
-  F_2000 txf[32];
+  S_2000 txf[50];
   double farg;
   long iarg;
   bool error = false;

@@ -19,6 +19,6 @@
 
 extern void encodeN2000(int nargs, T_2000 args[], E_2000* enc);
 
-extern int enframeN2000(E_2000* enc, int seq, F_2000 frames[]);
+extern int enframeN2000(E_2000* enc, int seq, S_2000 frames[]);
 
 #endif /* e2000_h */

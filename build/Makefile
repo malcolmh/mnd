@@ -4,6 +4,8 @@ clean:
 	rm -vf *.o mndd mnde
 
 install:
+	mkdir -p /usr/local/include/mnd
+	cp ../inc/mnd/* /usr/local/include/mnd/
 	mkdir -p /usr/local/bin
 	cp mndd /usr/local/bin/
 	cp mnde /usr/local/bin/

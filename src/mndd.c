@@ -139,7 +139,7 @@ int main(int argc, const char* argv[]) {
                     for (int i = 0; i < e2k.len; i++) {
                       e2k.msg[i] = e2k.msg[i+11];
                     }
-                    decodeN2000(&e2k, dec);
+                    interpretN2000(&e2k, dec);
                     if (strlen(dec) > 3)
                       printf("%s\n", dec);
                   } else {
@@ -177,7 +177,7 @@ int main(int argc, const char* argv[]) {
           for (int i = 0; i < e2k.len; i++) {
             e2k.msg[i] = strtol(strtok(NULL, ",\n"), NULL, 16);
           }
-          decodeN2000(&e2k, dec);
+          interpretN2000(&e2k, dec);
           if (strlen(dec) > 3)
             printf("%s\n", dec);
         }
@@ -187,6 +187,9 @@ int main(int argc, const char* argv[]) {
     } else if (strcmp(argv[1], "can") == 0) {
 
       /* SocketCAN input */
+
+      S_2000 frame;
+      E_2000 enc;
 
       if (argc > 2) {
 #ifdef __linux__
@@ -209,24 +212,9 @@ int main(int argc, const char* argv[]) {
           return 1;
         }
 
-        struct can_frame frame;
-
         while (read(dev, &frame, sizeof(struct can_frame)) > 0) {
-          E_2000 e2k;
-          e2k.dst = 255;
-          e2k.src = frame.can_id & 0xff;
-          e2k.pgn = (frame.can_id >> 8) & 0x3ffff;
-          if ((e2k.pgn & 0xf000) != 0xf000) {
-            e2k.dst = e2k.pgn & 0xff;
-            e2k.pgn &= 0x3ff00;
-          }
-          e2k.pri = (frame.can_id >> 26) & 0x7;
-          e2k.len = frame.can_dlc;
-          for (int i = 0; i < e2k.len; i++) {
-            e2k.msg[i] = frame.data[i];
-          }
-          decodeN2000(&e2k, dec);
-          if (strlen(dec) > 3) printf("%s\n", dec);
+          uint8_t* msg = deframeN2000(frame, &enc);
+//          if (msg != NULL) printf("%s\n", interpretN2000(&enc, dec));
         }
         perror("CAN read");
         return 1;
@@ -244,26 +232,17 @@ int main(int argc, const char* argv[]) {
           strtok(buf, " ");
           char* header = strtok(NULL, " ");
           unsigned long hdr = strtol(header, NULL, 16);
-          E_2000 e2k;
-          e2k.dst = 255;
-          e2k.src = hdr & 0xff;
-          e2k.pgn = (hdr >> 8) & 0x3ffff;
-          if ((e2k.pgn & 0xf000) != 0xf000) {
-            e2k.dst = e2k.pgn & 0xff;
-            e2k.pgn &= 0x3ff00;
-          }
-          e2k.pri = (hdr >> 26) & 0x7;
+          frame.hdr = hdr;
           strtok(NULL, " ");
-          e2k.len = 0;
+          frame.len = 0;
           for (char* body = strtok(NULL, " "); body != NULL; body = strtok(NULL, " ")) {
             unsigned int byte = 0;
             sscanf(body, "%02X", &byte);
-            e2k.msg[e2k.len++] = byte;
+            frame.dat[frame.len++] = byte;
           }
-          interpretN2000(&e2k, dec);
-          if (strlen(dec) > 3)
-            printf("%s\n", dec);
-        }
+          uint8_t* msg = deframeN2000(frame, &enc);
+          if (msg != NULL) printf("%s\n", interpretN2000(&enc, dec));
+         }
         fclose(in);
       }
 
