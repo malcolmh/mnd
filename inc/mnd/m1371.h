@@ -17,7 +17,7 @@
 
 typedef enum { MESG, ATON, NSTS, TYPE } MLU;
 
-extern char* decodeM1371(uint8_t encData[], int encLen, int pad);
+extern char* interpretM1371(uint8_t encData[], int encLen, int pad);
 extern char* lookupM1371(int val, MLU tab);
 
 #endif /* m1371_h */

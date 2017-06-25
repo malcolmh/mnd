@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-extern char* decodeN0183(char* ln, char* d0183);
-extern char* decodeTTD(uint8_t* buf, int len, char* decttd);
+extern char* interpretN0183(char* ln, char* d0183);
+extern char* interpretTTD(uint8_t* buf, int len, char* decttd);
 
 #endif /* n0183_h */

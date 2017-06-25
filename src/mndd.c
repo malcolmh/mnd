@@ -296,7 +296,7 @@ int main(int argc, const char* argv[]) {
         sleep(1);
         while (fgets(buf, 1000, in) != NULL) {
           if ((strlen(buf) > 10) && (strlen(buf) < 85))
-            printf("%s\n", decodeN0183(buf, dec));
+            printf("%s\n", interpretN0183(buf, dec));
         }
       } while (errno == EAGAIN);
 
