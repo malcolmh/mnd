@@ -56,7 +56,7 @@ typedef struct {
   uint8_t dat[8];       // Frame bytes
 } S_2000;               // SocketCAN frame
 
-uint8_t* deframeN2000(S_2000 frame, E_2000* enc);
+int deframeN2000(S_2000* frame, E_2000* enc);
 extern char* interpretN2000(E_2000* enc, char* d2000);
 //extern int unpackN2000(int pgn, int len, unsigned char* msg, int nargs, T_2000 args[]);
 

@@ -213,8 +213,8 @@ int main(int argc, const char* argv[]) {
         }
 
         while (read(dev, &frame, sizeof(struct can_frame)) > 0) {
-          uint8_t* msg = deframeN2000(frame, &enc);
-//          if (msg != NULL) printf("%s\n", interpretN2000(&enc, dec));
+          int msg = deframeN2000(&frame, &enc);
+          if (msg > 0) printf("%s\n", interpretN2000(&enc, dec));
         }
         perror("CAN read");
         return 1;
@@ -240,8 +240,8 @@ int main(int argc, const char* argv[]) {
             sscanf(body, "%02X", &byte);
             frame.dat[frame.len++] = byte;
           }
-          uint8_t* msg = deframeN2000(frame, &enc);
-          if (msg != NULL) printf("%s\n", interpretN2000(&enc, dec));
+          int msg = deframeN2000(&frame, &enc);
+          if (msg > 0) printf("%s\n", interpretN2000(&enc, dec));
          }
         fclose(in);
       }
