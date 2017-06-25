@@ -58,6 +58,6 @@ typedef struct {
 
 extern int deframeN2000(S_2000* frame, E_2000* enc);
 extern int decodeN2000(E_2000* enc, T_2000 args[]);
-extern char* interpretN2000(E_2000* enc, char* d2000);
+extern char* translateN2000(E_2000* enc, char* d2000);
 
 #endif /* n2000_h */

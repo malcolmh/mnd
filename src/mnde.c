@@ -137,7 +137,7 @@ int main(int argc, const char* argv[]) {
         }
         printf("Check decode:\n");
         char dec[4000];
-        printf("%s\n", interpretN2000(&enc, dec));
+        printf("%s\n", translateN2000(&enc, dec));
         printf("\n");
       } else {
         fprintf(stderr, "Invalid data\n");

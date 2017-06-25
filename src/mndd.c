@@ -139,7 +139,7 @@ int main(int argc, const char* argv[]) {
                     for (int i = 0; i < e2k.len; i++) {
                       e2k.msg[i] = e2k.msg[i+11];
                     }
-                    interpretN2000(&e2k, dec);
+                    translateN2000(&e2k, dec);
                     if (strlen(dec) > 3)
                       printf("%s\n", dec);
                   } else {
@@ -177,7 +177,7 @@ int main(int argc, const char* argv[]) {
           for (int i = 0; i < e2k.len; i++) {
             e2k.msg[i] = strtol(strtok(NULL, ",\n"), NULL, 16);
           }
-          interpretN2000(&e2k, dec);
+          translateN2000(&e2k, dec);
           if (strlen(dec) > 3)
             printf("%s\n", dec);
         }
@@ -214,7 +214,7 @@ int main(int argc, const char* argv[]) {
 
         while (read(dev, &frame, sizeof(struct can_frame)) > 0) {
           int msg = deframeN2000(&frame, &enc);
-          if (msg > 0) printf("%s\n", interpretN2000(&enc, dec));
+          if (msg > 0) printf("%s\n", translateN2000(&enc, dec));
         }
         perror("CAN read");
         return 1;
@@ -241,7 +241,7 @@ int main(int argc, const char* argv[]) {
             frame.dat[frame.len++] = byte;
           }
           int msg = deframeN2000(&frame, &enc);
-          if (msg > 0) printf("%s\n", interpretN2000(&enc, dec));
+          if (msg > 0) printf("%s\n", translateN2000(&enc, dec));
          }
         fclose(in);
       }
@@ -296,7 +296,7 @@ int main(int argc, const char* argv[]) {
         sleep(1);
         while (fgets(buf, 1000, in) != NULL) {
           if ((strlen(buf) > 10) && (strlen(buf) < 85))
-            printf("%s\n", interpretN0183(buf, dec));
+            printf("%s\n", translateN0183(buf, dec));
         }
       } while (errno == EAGAIN);
 
