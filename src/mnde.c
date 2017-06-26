@@ -50,6 +50,7 @@ int main(int argc, const char* argv[]) {
   T_2000 args[MaxArgs];
   E_2000 enc;
   S_2000 txf[50];
+  char dec[4000];
   double farg;
   long iarg;
   bool error = false;
@@ -134,9 +135,41 @@ int main(int argc, const char* argv[]) {
           }
           printf("\n");
         }
-        printf("Check decode:\n");
-        char dec[4000];
+        printf("\nCheck decodes:\n");
         printf("%s\n", translateN2000(&enc, dec));
+        int nargs = decodeN2000(&enc, args);
+        for (int i = 0; i < nargs; i++) {
+          bool string = false;
+          switch (args[i].typ) {
+          case M2K_I64:
+            printf("%lld", args[i].dat.i64);
+            break;
+          case M2K_F64:
+            printf("%lf", args[i].dat.f64);
+            break;
+          case M2K_ASC:
+            string = true;
+            for (int j = 0; j < 8; j++) {
+              if (args[i].dat.asc[j] == 0) {
+                string = false;
+                break;
+              }
+              printf("%02X ", args[i].dat.asc[j]);
+            }
+            break;
+          case M2K_UNI:
+            string = true;
+            for (int j = 0; j < 4; j++) {
+              if (args[i].dat.uni[j] == 0) {
+                string = false;
+                break;
+              }
+              printf("%04X ", args[i].dat.uni[j]);
+            }
+            break;
+          }
+          if ((i < (nargs - 1)) && !string) printf(", ");
+        }
         printf("\n");
       } else {
         fprintf(stderr, "Invalid data\n");
