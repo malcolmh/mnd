@@ -148,20 +148,28 @@ int main(int argc, const char* argv[]) {
             printf("%lf", args[i].dat.f64);
             break;
           case M2K_ASC:
-            string = true;
+            if (!string) {
+              string = true;
+              printf("0x(");
+            }
             for (int j = 0; j < 8; j++) {
               if (args[i].dat.asc[j] == 0) {
                 string = false;
+                printf("0)");
                 break;
               }
               printf("%02X ", args[i].dat.asc[j]);
             }
             break;
           case M2K_UNI:
-            string = true;
+            if (!string) {
+              string = true;
+              printf("0x(");
+            }
             for (int j = 0; j < 4; j++) {
               if (args[i].dat.uni[j] == 0) {
                 string = false;
+                printf("0)");
                 break;
               }
               printf("%04X ", args[i].dat.uni[j]);
