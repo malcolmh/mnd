@@ -145,7 +145,7 @@ int main(int argc, const char* argv[]) {
             printf("%lld", args[i].dat.i64);
             break;
           case M2K_F64:
-            printf("%lf", args[i].dat.f64);
+            printf("%lg", args[i].dat.f64);
             break;
           case M2K_ASC:
             if (!string) {
