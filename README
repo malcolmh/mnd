@@ -52,7 +52,9 @@ Payload bytes:
   
 CAN frames:
   99F30000 [8] 03 01 01 00 18 00 00 00 
-Check decode:
-AC Power/Current - Phase A - PGN: 127744, Priority: 6, DST: 255, SRC: 0
+
+Check decodes:
+AC Power/Current - Phase A - PGN: 127744, Priority: 6, DST: 0, SRC: 0
     SID: 3  Connection: 1  AC current: 0.10A  Power: 24W
+127744, 3, 1, 0, 24
 
