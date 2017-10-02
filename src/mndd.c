@@ -65,10 +65,8 @@ int main(int argc, const char* argv[]) {
           return 1;
         }
         memset(&attr, 0, sizeof(attr));
-        cfsetispeed(&attr, B115200);
-        cfsetospeed(&attr, B115200);
-        attr.c_cflag |= CS8 | CLOCAL | CREAD;
-        attr.c_iflag |= IGNPAR;
+        cfsetspeed(&attr, B115200);
+        cfmakeraw(&attr);
         attr.c_cc[VMIN] = 1;
         attr.c_cc[VTIME] = 0;
         tcflush(dev, TCIFLUSH);
