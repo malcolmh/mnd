@@ -104,15 +104,13 @@ int main(int argc, const char* argv[]) {
           sscanf(arg, "%lf", &farg);
           args[idx].dat.f64 = farg;
         } else {
-          for (int i = 0; arg[i - 1] != 0; idx++) {
+          for (int i = 0; true; idx++) {
             args[idx].typ = MND_ASC;
             for (int j = 0; j < 8; j++) {
               args[idx].dat.asc[j] = arg[i];
-              if (arg[i++] == 0) {
-                idx--;
-                break;
-              }
+              if (arg[i++] == 0) break;
             }
+            if (arg[i-1] == 0) break;
           }
         }
         arg = ++nxt;
@@ -174,7 +172,7 @@ int main(int argc, const char* argv[]) {
           bool string = false;
           switch (args[i].typ) {
           case MND_I64:
-            printf("%lld", args[i].dat.i64);
+            printf("%ld", args[i].dat.i64);
             break;
           case MND_F64:
             printf("%lg", args[i].dat.f64);
