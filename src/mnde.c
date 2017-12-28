@@ -175,7 +175,7 @@ int main(int argc, const char* argv[]) {
             printf("%ld", args[i].dat.i64);
             break;
           case MND_F64:
-            printf("%lg", args[i].dat.f64);
+            printf("%.10lg", args[i].dat.f64);
             break;
           case MND_ASC:
             if (!string) {
