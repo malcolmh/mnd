@@ -47,16 +47,18 @@ int main(int argc, const char* argv[]) {
   regcomp(&decimal, "^[+-]?[0-9]+([.]?[0-9])*([eE][+-]?[0-9]+)?$", REG_EXTENDED | REG_NOSUB);
   regcomp(&integer, "^[+-]?[0-9]+$", REG_EXTENDED | REG_NOSUB);
   regcomp(&hexadec, "^0[xX][0-9a-fA-F]+$", REG_EXTENDED | REG_NOSUB);
-  T_2000 args[MaxArgs];
+  MND_PAR args[MaxArgs];
   E_2000 enc;
   S_2000 txf[50];
   char dec[4000];
+  char sen[100];
   double farg;
   long iarg;
   bool error = false;
   char ln[500];
   int seq = 0;
   int src, dst;
+  int nargs;
   for (;;) {
     if (fgets(ln, 500, stdin) == NULL)
       return 0;
@@ -72,8 +74,38 @@ int main(int argc, const char* argv[]) {
           arg++;
           for (char qte = *nxt++; *nxt != qte; nxt++) ;
           *nxt = 0;
-          for (int i = 0; arg[i-1] != 0; idx++) {
-            args[idx].typ = M2K_ASC;
+        } else {
+          for (; ((*nxt != ' ') && (*nxt != ',') && (*nxt != '\n')); nxt++) ;
+          *nxt = 0;
+        }
+        while (*nxt == ' ') nxt++;
+        if ((strlen(arg) == 0) || (strcmp(arg, "n/a") == 0)) {
+          args[idx].typ = MND_I64;
+          args[idx].dat.i64 = INT64_MAX;
+        } else if (strcmp(arg, "error") == 0) {
+          args[idx].typ = MND_I64;
+          args[idx].dat.i64 = INT64_MAX - 1;
+        } else if (strcmp(arg, "-") == 0) {
+          args[idx].typ = MND_I64;
+          args[idx].dat.i64 = INT64_MAX - 2;
+        } else if (!regexec(&src_dst, arg, 0, NULL, 0)) {
+          sscanf(arg, "%d>%d", &src, &dst);
+          idx--;
+        } else if (!regexec(&hexadec, arg, 0, NULL, 0)) {
+          args[idx].typ = MND_I64;
+          sscanf(arg, "%lx", &iarg);
+          args[idx].dat.i64 = iarg;
+        } else if (!regexec(&integer, arg, 0, NULL, 0)) {
+          args[idx].typ = MND_I64;
+          sscanf(arg, "%ld", &iarg);
+          args[idx].dat.i64 = iarg;
+        } else if (!regexec(&decimal, arg, 0, NULL, 0)) {
+          args[idx].typ = MND_F64;
+          sscanf(arg, "%lf", &farg);
+          args[idx].dat.f64 = farg;
+        } else {
+          for (int i = 0; arg[i - 1] != 0; idx++) {
+            args[idx].typ = MND_ASC;
             for (int j = 0; j < 8; j++) {
               args[idx].dat.asc[j] = arg[i];
               if (arg[i++] == 0) {
@@ -82,39 +114,10 @@ int main(int argc, const char* argv[]) {
               }
             }
           }
-        } else {
-          for (; ((*nxt != ' ') && (*nxt != ',') && (*nxt != '\n')); nxt++) ;
-          *nxt = 0;
-          while (*nxt == ' ') nxt++;
-          if ((strlen(arg) == 0) || (strcmp(arg, "n/a") == 0)) {
-            args[idx].typ = M2K_I64;
-            args[idx].dat.i64 = INT64_MAX;
-          } else if (strcmp(arg, "error") == 0) {
-            args[idx].typ = M2K_I64;
-            args[idx].dat.i64 = INT64_MAX - 1;
-          } else if (strcmp(arg, "-") == 0) {
-            args[idx].typ = M2K_I64;
-            args[idx].dat.i64 = INT64_MAX - 2;
-          } else if (!regexec(&src_dst, arg, 0, NULL, 0)) {
-            sscanf(arg, "%d>%d", &src, &dst);
-            idx--;
-          } else if (!regexec(&hexadec, arg, 0, NULL, 0)) {
-            args[idx].typ = M2K_I64;
-            sscanf(arg, "%lx", &iarg);
-            args[idx].dat.i64 = iarg;
-          } else if (!regexec(&integer, arg, 0, NULL, 0)) {
-            args[idx].typ = M2K_I64;
-            sscanf(arg, "%ld", &iarg);
-            args[idx].dat.i64 = iarg;
-          } else if (!regexec(&decimal, arg, 0, NULL, 0)) {
-            args[idx].typ = M2K_F64;
-            sscanf(arg, "%lf", &farg);
-            args[idx].dat.f64 = farg;
-          }
         }
         arg = ++nxt;
       }
-      if ((args[0].typ == M2K_I64) && (idx > 1)) {
+      if ((args[0].typ == MND_I64) && (idx > 1)) {
         enc.dst = dst;
         enc.src = src;
         encodeN2000(idx, args, &enc);
@@ -137,17 +140,46 @@ int main(int argc, const char* argv[]) {
         }
         printf("\nCheck decodes:\n");
         printf("%s\n", translateN2000(&enc, dec));
-        int nargs = decodeN2000(&enc, args);
+        nargs = decodeN2000(&enc, args);
+        error = false;
+      } else if ((args[0].typ == MND_ASC) && ((args[0].dat.asc[0] == '$') || (args[0].dat.asc[0] == '!'))) {
+    	  encodeN0183(idx, args, sen);
+    	  printf("\n%s", sen);
+        printf("Check decode:\n");
+        printf("%s\n\n", translateN0183(sen, dec));
+//        nargs = decodeN0183(&enc, args);
+        nargs = idx;
+        error = false;
+      } else {
+        fprintf(stderr, "Invalid data\n");
+        if (error) {
+          return 1;
+        } else {
+          error = true;
+          fprintf(stderr, "Data format:\n");
+          fprintf(stderr, "  NMEA.0183: \"$\"|\"!\"<address>, <parameter>, <parameter>, ...\n");
+          fprintf(stderr, "  NMEA.2000: [SA>DA,] <PGN>, <parameter>, <parameter>, ...\n");
+          fprintf(stderr, "Optional SA>DA pair. Both must be integers with no spaces. (Defaults are 0)\n");
+          fprintf(stderr, "<PGN> must be an integer\n");
+          fprintf(stderr, "<parameter> fields can be numbers or quoted strings\n");
+          fprintf(stderr, "The values \"-\", \"n/a\" & \"error\" can be used for integer fields\n");
+          fprintf(stderr, "Blank fields can be used for unavailable or reserved values\n");
+          fprintf(stderr, "Lines beginning with '#' are comments and echoed to output\n");
+          fprintf(stderr, "Dates should be integers in the form: YYYYMMDD\n");
+          fprintf(stderr, "Times should be integers in the form: HHMMSS\n\n");
+        }
+      }
+      if (!error) {
         for (int i = 0; i < nargs; i++) {
           bool string = false;
           switch (args[i].typ) {
-          case M2K_I64:
+          case MND_I64:
             printf("%lld", args[i].dat.i64);
             break;
-          case M2K_F64:
+          case MND_F64:
             printf("%lg", args[i].dat.f64);
             break;
-          case M2K_ASC:
+          case MND_ASC:
             if (!string) {
               string = true;
               printf("0x(");
@@ -161,7 +193,7 @@ int main(int argc, const char* argv[]) {
               printf("%02X ", args[i].dat.asc[j]);
             }
             break;
-          case M2K_UNI:
+          case MND_UNI:
             if (!string) {
               string = true;
               printf("0x(");
@@ -176,26 +208,10 @@ int main(int argc, const char* argv[]) {
             }
             break;
           }
-          if ((i < (nargs - 1)) && !string) printf(", ");
+          if ((i < (nargs - 1)) && !string)
+            printf(", ");
         }
         printf("\n");
-      } else {
-        fprintf(stderr, "Invalid data\n");
-        if (error) {
-          return 1;
-        } else {
-          error = true;
-          fprintf(stderr, "Data format: [SA>DA,] <PGN>, <parameter>, <parameter>, ...\n");
-          fprintf(stderr, "Optional SA>DA pair. Both must be integers with no spaces. (Defaults are 0)\n");
-          fprintf(stderr, "<PGN> must be an integer\n");
-          fprintf(stderr, "<parameter> fields can be numbers or quoted strings\n");
-          fprintf(stderr, "The values \"-\", \"n/a\" & \"error\" can be used for integer fields\n");
-          fprintf(stderr, "Blank fields can be used for unavailable or reserved values\n");
-          fprintf(stderr, "Lines beginning with '#' are comments and echoed to output\n");
-          fprintf(stderr, "Dates should be integers in the form: YYYYMMDD\n");
-          fprintf(stderr, "Times should be integers in the form: HHMMSS\n");
-
-        }
       }
     }
   }
