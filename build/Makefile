@@ -3,7 +3,7 @@ all: mndd mnde
 clean:
 	rm -vf *.o mndd mnde
 
-install:
+install: mndd mnde
 	mkdir -p /usr/local/bin
 	cp mndd /usr/local/bin/
 	cp mnde /usr/local/bin/

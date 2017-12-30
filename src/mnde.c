@@ -73,9 +73,9 @@ int main(int argc, const char* argv[]) {
         if ((*arg == '\'') || (*arg == '"')) {
           arg++;
           for (char qte = *nxt++; *nxt != qte; nxt++) ;
-          *nxt = 0;
+          *nxt++ = 0;
         } else {
-          for (; ((*nxt != ' ') && (*nxt != ',') && (*nxt != '\n')); nxt++) ;
+          for (; ((*nxt != ',') && (*nxt != '\n')); nxt++) ;
           *nxt = 0;
         }
         while (*nxt == ' ') nxt++;
@@ -141,13 +141,15 @@ int main(int argc, const char* argv[]) {
         nargs = decodeN2000(&enc, args);
         error = false;
       } else if ((args[0].typ == MND_ASC) && ((args[0].dat.asc[0] == '$') || (args[0].dat.asc[0] == '!'))) {
-    	  encodeN0183(idx, args, sen);
+    	  bool ok = encodeN0183(idx, args, sen);
     	  printf("\n%s", sen);
-        printf("Check decode:\n");
-        printf("%s\n\n", translateN0183(sen, dec));
+        if (ok) {
+          printf("Check decode:\n");
+          printf("%s\n\n", translateN0183(sen, dec));
 //        nargs = decodeN0183(&enc, args);
-        nargs = idx;
-        error = false;
+          nargs = idx;
+          error = false;
+        }
       } else {
         fprintf(stderr, "Invalid data\n");
         if (error) {
@@ -155,24 +157,39 @@ int main(int argc, const char* argv[]) {
         } else {
           error = true;
           fprintf(stderr, "Data format:\n");
-          fprintf(stderr, "  NMEA.0183: \"$\"|\"!\"<address>, <parameter>, <parameter>, ...\n");
-          fprintf(stderr, "  NMEA.2000: [SA>DA,] <PGN>, <parameter>, <parameter>, ...\n");
+          fprintf(stderr, "  NMEA.0183: \"$\"|\"!\"<address>,<parameter>,<parameter>,...\n");
+          fprintf(stderr, "  NMEA.2000: [SA>DA,]<PGN>,<parameter>,<parameter>,...\n");
           fprintf(stderr, "Optional SA>DA pair. Both must be integers with no spaces. (Defaults are 0)\n");
           fprintf(stderr, "<PGN> must be an integer\n");
           fprintf(stderr, "<parameter> fields can be numbers or quoted strings\n");
           fprintf(stderr, "The values \"-\", \"n/a\" & \"error\" can be used for integer fields\n");
           fprintf(stderr, "Blank fields can be used for unavailable or reserved values\n");
+          fprintf(stderr, "Parameters must be terminated with a comma. Leading white space is ignored\n");
           fprintf(stderr, "Lines beginning with '#' are comments and echoed to output\n");
           fprintf(stderr, "Dates should be integers in the form: YYYYMMDD\n");
-          fprintf(stderr, "Times should be integers in the form: HHMMSS\n\n");
+          fprintf(stderr, "Times should be integers in the form: HHMMSS[.sss]\n");
+          fprintf(stderr, "Lat/Lon should be signed decimal degrees\n\n");
         }
       }
       if (!error) {
+        bool string = false;
         for (int i = 0; i < nargs; i++) {
-          bool string = false;
           switch (args[i].typ) {
           case MND_I64:
-            printf("%ld", args[i].dat.i64);
+            switch (args[i].dat.i64) {
+            default:
+            case INT64_MAX:
+              printf("n/a");
+              break;
+            case INT64_MAX - 1:
+              printf("error");
+              break;
+            case INT64_MAX - 2:
+              printf("-");
+              break;
+              printf("%lld", args[i].dat.i64);
+              break;
+            }
             break;
           case MND_F64:
             printf("%.10lg", args[i].dat.f64);
