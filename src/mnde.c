@@ -177,7 +177,6 @@ int main(int argc, const char* argv[]) {
           switch (args[i].typ) {
           case MND_I64:
             switch (args[i].dat.i64) {
-            default:
             case INT64_MAX:
               printf("n/a");
               break;
@@ -187,6 +186,7 @@ int main(int argc, const char* argv[]) {
             case INT64_MAX - 2:
               printf("-");
               break;
+            default:
               printf("%lld", args[i].dat.i64);
               break;
             }
