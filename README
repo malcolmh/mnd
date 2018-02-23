@@ -1,6 +1,6 @@
 Two demonstration command-line utilites that utilise the libmnd library.
 
-The binary images and incluse files for the library can be found at: https://github.com/victronenergy/libmnd
+The binary images and include files for the library can be found at: https://github.com/victronenergy/libmnd
 
 Installation:
 1. Library: move the lib/libmnd.so.* file renamed as libmnd.so to a directory on your LD_LIBRARY_PATH
