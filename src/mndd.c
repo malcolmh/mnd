@@ -65,14 +65,15 @@ int main(int argc, const char* argv[]) {
           return 1;
         }
         memset(&attr, 0, sizeof(attr));
+//        cfsetspeed(&attr, B230400);
         cfsetspeed(&attr, B115200);
         cfmakeraw(&attr);
         attr.c_cc[VMIN] = 1;
         attr.c_cc[VTIME] = 0;
         tcflush(dev, TCIFLUSH);
         tcsetattr(dev, TCSANOW, &attr);
-        uint8_t cmd[] = { 0x00, 0x00, 0x10, 0x02, 0xA1, 0x03, 0x11, 0x02, 0x00, 0x49, 0x10, 0x03 };
-        write(dev, cmd, sizeof(cmd));
+        uint8_t init[] = { 0x10, 0x02, 0xA1, 0x03, 0x11, 0x02, 0x00, 0x49, 0x10, 0x03 };
+        write(dev, init, sizeof(init));
         sleep(1);
         E_2000 e2k;
         uint8_t ch;
@@ -292,8 +293,9 @@ int main(int argc, const char* argv[]) {
       do {
         sleep(1);
         while (fgets(buf, 1000, in) != NULL) {
-          if ((strlen(buf) > 10) && (strlen(buf) < 85))
+          if ((strlen(buf) > 10) && (strlen(buf) < 85)) {
             printf("%s\n", translateN0183(buf, dec));
+          }
         }
       } while (errno == EAGAIN);
 
@@ -304,7 +306,7 @@ int main(int argc, const char* argv[]) {
     fprintf(stderr, "===========================\n");
     fprintf(stderr, "Marine Network Data Decoder\n");
     fprintf(stderr, "===========================\n");
-    fprintf(stderr, "Usage: mndd com|can|ngt [device [speed]]\n");
+    fprintf(stderr, "Usage: mndd (com|can|ngt) [<device> [<speed>]]\n");
     fprintf(stderr, "Default Input from stdin, Output to stdout\n");
     fprintf(stderr, "Default decoding is N0183\n");
     fprintf(stderr, "com: N0183 input from com port (ASCII data)\n");

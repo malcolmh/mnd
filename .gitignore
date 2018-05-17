@@ -1,10 +1,9 @@
 *.o
 mndd
 mnde
+mndb
 .settings
 .cproject
 .project
-/mndd/*
-/mnde/*
 /Debug/
 /Release/
