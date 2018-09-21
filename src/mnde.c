@@ -147,16 +147,11 @@ int main(int argc, const char* argv[]) {
         error = false;
       } else if ((args[0].typ == MND_ASC) && ((args[0].dat.asc[0] == '$') || (args[0].dat.asc[0] == '!'))) {
     	  bool ok = encodeN0183(idx, args, sen);
-    	  printf("\n%s", sen);
+    	  printf("\n%s\n", sen);
         if (ok) {
-          printf("Check decode:\n");
-          printf("%s\n\n", translateN0183(sen, dec));
-//        nargs = decodeN0183(&enc, args);
-          nargs = convertN0183(idx, args);
-          E_2000 enc = {0};
-          encodeN2000(nargs, args, &enc);
-          printf("%s\n", translateN2000(&enc, dec));
-//          nargs = idx;
+          printf("Check decodes:\n");
+          printf("%s\n", translateN0183(sen, dec));
+          nargs = decodeN0183(sen, args);
           error = false;
         }
       } else {
@@ -172,7 +167,7 @@ int main(int argc, const char* argv[]) {
           fprintf(stderr, "<PGN> must be an integer\n");
           fprintf(stderr, "<parameter> fields can be numbers or quoted strings\n");
           fprintf(stderr, "The values \"-\", \"n/a\" & \"error\" can be used for integer fields\n");
-          fprintf(stderr, "Blank fields can be used for unavailable or reserved values\n");
+          fprintf(stderr, "Blank fields should be used for unavailable or reserved values\n");
           fprintf(stderr, "Parameters must be terminated with a comma. Leading white space is ignored\n");
           fprintf(stderr, "Lines beginning with '#' are comments and echoed to output\n");
           fprintf(stderr, "Dates should be integers in the form: YYYYMMDD\n");
@@ -258,7 +253,7 @@ int main(int argc, const char* argv[]) {
           if ((i < (nargs - 1)) && !multi)
             printf(", ");
         }
-        printf("\n");
+        printf("\n\n");
       }
     }
   }
