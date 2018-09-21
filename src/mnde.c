@@ -31,11 +31,6 @@
 
 #include <mnd/mnd.h>
 
-//*********
-extern int convertN2000(int nargs,  MND_PAR args[]);
-extern int convertN0183(int nargs,  MND_PAR args[]);
-//******
-
 #define MaxArgs 100
 
 int main(int argc, const char* argv[]) {
