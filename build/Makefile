@@ -13,10 +13,10 @@ mndd: mndd.o
 	cc -o mndd mndd.o -L/usr/local/lib/ -lmnd -lm
 
 mnde: mnde.o mndc.o
-	cc -o mnde mnde.o mndc.o -L/usr/local/lib/ -lmnd -lm
+	cc -o mnde mnde.o -L/usr/local/lib/ -lmnd -lm
 
 mndb: mndb.o mndc.o
-	cc -o mndb mndb.o mndc.o -L/usr/local/lib/ -lmnd -lm
+	cc -o mndb mndb.o -L/usr/local/lib/ -lmnd -lm
 
 mndd.o: ../src/mndd.c
 	cc -c -std=gnu11 ../src/mndd.c
@@ -26,6 +26,3 @@ mnde.o: ../src/mnde.c
 
 mndb.o: ../src/mndb.c
 	cc -c -std=gnu11 ../src/mndb.c
-
-mndc.o: ../src/mndc.c
-	cc -c -std=gnu11 ../src/mndc.c

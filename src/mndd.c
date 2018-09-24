@@ -295,6 +295,12 @@ int main(int argc, const char* argv[]) {
         while (fgets(buf, 1000, in) != NULL) {
           if ((strlen(buf) > 10) && (strlen(buf) < 85)) {
             printf("%s\n", translateN0183(buf, dec));
+            {//*****
+              MND_PAR args[100];
+              int nargs = decodeN0183(buf, args);
+              nargs = convertN0183(nargs, args);
+              printf("%d\n", nargs);
+            }//*****
           }
         }
       } while (errno == EAGAIN);

@@ -429,7 +429,7 @@ int main(int argc, const char* argv[]) {
   fprintf(stderr, "===========================\n");
   fprintf(stderr, "Marine Network Data Bridge\n");
   fprintf(stderr, "===========================\n");
-  fprintf(stderr, "Usage: mndb (can|ngt) [<device> [s=<speed>]] [to|from] (com [<device> [s=<speed>]])... [h=<heading>]\n");
+  fprintf(stderr, "Usage: mndb (can|ngt) [<device> [s=<speed>]] [to|from] (com [<device> [s=<speed>]]...) [h=<heading>]\n");
   fprintf(stderr, "default is bi-directional conversion\n");
   fprintf(stderr, "to: N2000 conversion to N0183 only\n");
   fprintf(stderr, "from: N0183 conversion to N2000 only\n");
