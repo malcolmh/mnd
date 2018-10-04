@@ -32,6 +32,7 @@
 #include <mnd/mnd.h>
 
 #define MaxArgs 100
+void printargs(MND_PAR args[]);
 
 int main(int argc, const char* argv[]) {
 
@@ -54,11 +55,9 @@ int main(int argc, const char* argv[]) {
   char sen[100];
   double farg;
   long iarg;
-  bool error = false;
   char ln[500];
   int seq = 0;
   int src, dst;
-  int nargs;
   for (;;) {
     if (fgets(ln, 500, stdin) == NULL)
       return 0;
@@ -115,10 +114,11 @@ int main(int argc, const char* argv[]) {
         }
         arg = ++nxt;
       }
+      args[idx].typ = MND_EOM;
       if ((args[0].typ == MND_I64) && (idx > 1)) {
         enc.dst = dst;
         enc.src = src;
-        encodeN2000(idx, args, &enc);
+        encodeN2000(args, &enc);
         printf("Payload bytes:\n  ");
         for (int i = 0; i < enc.len; ) {
           for (int j = 0; (j < 32) && (i < enc.len); j++, i++) {
@@ -138,119 +138,116 @@ int main(int argc, const char* argv[]) {
         }
         printf("\nCheck decodes:\n");
         printf("%s\n", translateN2000(&enc, dec));
-        nargs = decodeN2000(&enc, args);
-        error = false;
+        decodeN2000(&enc, args);
       } else if ((args[0].typ == MND_ASC) && ((args[0].dat.asc[0] == '$') || (args[0].dat.asc[0] == '!'))) {
-    	  bool ok = encodeN0183(idx, args, sen);
-    	  printf("\n%s\n", sen);
-        if (ok) {
-          printf("Check decodes:\n");
-          printf("%s\n", translateN0183(sen, dec));
-          nargs = decodeN0183(sen, args);
-          error = false;
-        }
+        encodeN0183(args, sen);
+        printf("\n%s\n", sen);
+        printf("Check decodes:\n");
+        printf("%s\n", translateN0183(sen, dec));
+        decodeN0183(sen, args);
       } else {
         fprintf(stderr, "Invalid data\n");
-        if (error) {
-          return 1;
-        } else {
-          error = true;
-          fprintf(stderr, "Data format:\n");
-          fprintf(stderr, "  NMEA.0183: ($|!)<address>,<parameter>,<parameter>,...\n");
-          fprintf(stderr, "  NMEA.2000: [SA>DA,]<PGN>,<parameter>,<parameter>,...\n");
-          fprintf(stderr, "Optional SA>DA pair. Both must be integers with no spaces. (Defaults are 0)\n");
-          fprintf(stderr, "<PGN> must be an integer\n");
-          fprintf(stderr, "<parameter> fields can be numbers or quoted strings\n");
-          fprintf(stderr, "The values \"-\", \"n/a\" & \"error\" can be used for integer fields\n");
-          fprintf(stderr, "Blank fields should be used for unavailable or reserved values\n");
-          fprintf(stderr, "Parameters must be terminated with a comma. Leading white space is ignored\n");
-          fprintf(stderr, "Lines beginning with '#' are comments and echoed to output\n");
-          fprintf(stderr, "Dates should be integers in the form: YYYYMMDD\n");
-          fprintf(stderr, "Times should be integers or decimals in the form: HHMMSS[.sss]\n");
-          fprintf(stderr, "Lat/Lon should be signed decimal degrees\n\n");
-        }
+        fprintf(stderr, "Data format:\n");
+        fprintf(stderr, "  NMEA.0183: ($|!)<address>,<parameter>,<parameter>,...\n");
+        fprintf(stderr, "  NMEA.2000: [SA>DA,]<PGN>,<parameter>,<parameter>,...\n");
+        fprintf(stderr, "Optional SA>DA pair. Both must be integers with no spaces. (Defaults are 0)\n");
+        fprintf(stderr, "<PGN> must be an integer\n");
+        fprintf(stderr, "<parameter> fields can be numbers or quoted strings\n");
+        fprintf(stderr, "The values \"-\", \"n/a\" & \"error\" can be used for integer fields\n");
+        fprintf(stderr, "Blank fields should be used for unavailable or reserved values\n");
+        fprintf(stderr, "Parameters must be terminated with a comma. Leading white space is ignored\n");
+        fprintf(stderr, "Lines beginning with '#' are comments and echoed to output\n");
+        fprintf(stderr, "Dates should be integers in the form: YYYYMMDD\n");
+        fprintf(stderr, "Times should be integers or decimals in the form: HHMMSS[.sss]\n");
+        fprintf(stderr, "Lat/Lon should be signed decimal degrees\n\n");
+        return 1;
       }
-      if (!error) {
-        bool multi = false;
-        int count = 0;
-        for (int i = 0; i < nargs; i++) {
-          switch (args[i].typ) {
-          case MND_NUL:
-            printf("<null>");
-            break;
-          case MND_I64:
-            switch (args[i].dat.i64) {
-            case INT64_MAX:
-              printf("n/a");
-              break;
-            case INT64_MAX - 1:
-              printf("error");
-              break;
-            case INT64_MAX - 2:
-              printf("-");
-              break;
-            default:
-              printf("%lld", args[i].dat.i64);
-              break;
-            }
-            break;
-          case MND_F64:
-            printf("%.10lg", args[i].dat.f64);
-            break;
-          case MND_ASC:
-            if (!multi) {
-              multi = true;
-              printf("0x(");
-            }
-            for (int j = 0; j < 8; j++) {
-              if (args[i].dat.asc[j] == 0) {
-                multi = false;
-                printf("0)");
-                break;
-              }
-              printf("%02X ", args[i].dat.asc[j]);
-            }
-            break;
-          case MND_UNI:
-            if (!multi) {
-              multi = true;
-              printf("0x(");
-            }
-            for (int j = 0; j < 4; j++) {
-              if (args[i].dat.uni[j] == 0) {
-                multi = false;
-                printf("0)");
-                break;
-              }
-              printf("%04X ", args[i].dat.uni[j]);
-            }
-            break;
-          case MND_BIN:
-            if (!multi) {
-              multi = true;
-              count = args[i].dat.bin[0];
-              if (count & 0x1) count |= (args[i].dat.bin[1] << 8);
-              count >>= 1;
-              printf("0x(");
-            }
-            for (int j = 0; j < 8; j++) {
-              if (--count == 0) {
-                multi = false;
-                printf(")");
-                break;
-              }
-              printf("%02X ", args[i].dat.asc[j]);
-            }
-            break;
-          default:
-            break;
-          }
-          if ((i < (nargs - 1)) && !multi)
-            printf(", ");
-        }
-        printf("\n\n");
-      }
+      printargs(args);
+      printf("\n");
     }
   }
-  return 0;
+return 0;
+}
+
+void printargs(MND_PAR args[]) {
+  bool multi = false;
+  int count = 0;
+  for (int i = 0; args[i].typ != MND_END; i++) {
+    switch (args[i].typ) {
+    case MND_NUL:
+      printf("<null>");
+      break;
+    case MND_I64:
+      switch (args[i].dat.i64) {
+      case INT64_MAX:
+        printf("n/a");
+        break;
+      case INT64_MAX - 1:
+        printf("error");
+        break;
+      case INT64_MAX - 2:
+        printf("-");
+        break;
+      default:
+        printf("%lld", args[i].dat.i64);
+        break;
+      }
+      break;
+    case MND_F64:
+      printf("%.10lg", args[i].dat.f64);
+      break;
+    case MND_ASC:
+      if (!multi) {
+        multi = true;
+        printf("0x(");
+      }
+      for (int j = 0; j < 8; j++) {
+        if (args[i].dat.asc[j] == 0) {
+          multi = false;
+          printf("0)");
+          break;
+        }
+        printf("%02X ", args[i].dat.asc[j]);
+      }
+      break;
+    case MND_UNI:
+      if (!multi) {
+        multi = true;
+        printf("0x(");
+      }
+      for (int j = 0; j < 4; j++) {
+        if (args[i].dat.uni[j] == 0) {
+          multi = false;
+          printf("0)");
+          break;
+        }
+        printf("%04X ", args[i].dat.uni[j]);
+      }
+      break;
+    case MND_BIN:
+      if (!multi) {
+        multi = true;
+        count = args[i].dat.bin[0];
+        if (count & 0x1)
+          count |= (args[i].dat.bin[1] << 8);
+        count >>= 1;
+        printf("0x(");
+      }
+      for (int j = 0; j < 8; j++) {
+        if (--count == 0) {
+          multi = false;
+          printf(")");
+          break;
+        }
+        printf("%02X ", args[i].dat.asc[j]);
+      }
+      break;
+    default:
+      break;
+    }
+    if (args[i].typ == MND_EOM)
+      printf("\n");
+    else if ((args[i+1].typ != MND_EOM) && !multi)
+      printf(", ");
+  }
 }
