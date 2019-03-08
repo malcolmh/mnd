@@ -137,6 +137,15 @@ int main(int argc, const char* argv[]) {
                     for (int i = 0; i < e2k.len; i++) {
                       e2k.msg[i] = e2k.msg[i+11];
                     }
+#ifdef DEBUG
+                    for (int i = 0; i < e2k.len; ) {
+                      for (int j = 0; j < 8; j++) {
+                        printf("%02X ", e2k.msg[i++]);
+                        if (i >= e2k.len) break;
+                      }
+                      printf("\n");
+                    }
+#endif
                     translateN2000(&e2k, dec);
                     if (strlen(dec) > 3)
                       printf("%s\n", dec);
