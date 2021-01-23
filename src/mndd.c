@@ -270,6 +270,8 @@ int main(int argc, const char* argv[]) {
         cfsetspeed(&config, B115200);
         if (argc > 3) {
           cfsetspeed(&config, atoi(argv[3]));
+        } else {
+          cfsetspeed(&config, 115200);
         }
         config.c_cflag |= (CLOCAL | CREAD);
         config.c_cflag &= ~PARENB;
