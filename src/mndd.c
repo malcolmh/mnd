@@ -283,6 +283,9 @@ int main(int argc, const char* argv[]) {
           case 38400:
             cfsetspeed(&config, B38400);
             break;
+          case 460800:
+            cfsetspeed(&config, B460800);
+            break;
           }
         }
         config.c_cflag |= (CLOCAL | CREAD);
