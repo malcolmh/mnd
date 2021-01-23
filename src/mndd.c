@@ -269,24 +269,7 @@ int main(int argc, const char* argv[]) {
         }
         cfsetspeed(&config, B115200);
         if (argc > 3) {
-          int baud = atoi(argv[3]);
-          switch (baud) {
-          case 4800:
-            cfsetspeed(&config, B4800);
-            break;
-          case 9600:
-            cfsetspeed(&config, B9600);
-            break;
-          case 19200:
-            cfsetspeed(&config, B19200);
-            break;
-          case 38400:
-            cfsetspeed(&config, B38400);
-            break;
-          case 460800:
-            cfsetspeed(&config, B460800);
-            break;
-          }
+          cfsetspeed(&config, atoi(argv[3]));
         }
         config.c_cflag |= (CLOCAL | CREAD);
         config.c_cflag &= ~PARENB;
