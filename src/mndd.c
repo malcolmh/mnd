@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
             /* NGT-1 input */
             /* Thanks to Kees Verruijt of CANboat for hacking this device */
 
-            if (*device != 0) {
+            if (device != NULL) {
                 struct termios attr;
                 if ((dev = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK)) < 0) {
                     perror("NGT open");
@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
             S_2000 frame;
             E_2000 enc;
 
-            if (*device != 0) {
+            if (device != NULL) {
 #ifdef __linux__
                 struct sockaddr_can addr;
                 struct ifreq ifr;
