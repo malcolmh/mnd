@@ -72,6 +72,7 @@ bool filterPGN(char str[]) {
 int main(int argc, char *argv[]) {
 
     int dev = 0;
+    FILE *output = stdout;
     char buf[1000];
     char dec[4000];
     char *filter = 0;
@@ -89,7 +90,7 @@ int main(int argc, char *argv[]) {
 
         int opt;
 
-        while ((opt = getopt(argc, argv, "d:s:f:")) != -1) {
+        while ((opt = getopt(argc, argv, "d:s:f:o:")) != -1) {
             switch (opt) {
             case 'd':
                 device = optarg;
@@ -99,6 +100,12 @@ int main(int argc, char *argv[]) {
                 break;
             case 'f':
                 filter = optarg;
+                break;
+            case 'o':
+                if ((output = fopen(optarg, "w+")) < 0) {
+                    perror("Output open");
+                    return 1;
+                }
                 break;
             }
         }
@@ -201,9 +208,9 @@ int main(int argc, char *argv[]) {
                                         }
                                         translateN2000(&e2k, dec);
                                         if (strlen(dec) > 3) {
-                                            if (filterPGN(dec)) printf("%s\n", dec);
+                                            if (filterPGN(dec)) fprintf(output, "%s\n", dec);
                                         } else {
-                                            printf("*** NGT Checksum error ***\n");
+                                            fprintf(output, "*** NGT Checksum error ***\n");
                                         }
                                     }
                                     state = NGT_CC0;
@@ -239,7 +246,7 @@ int main(int argc, char *argv[]) {
                         e2k.msg[i] = strtol(strtok(NULL, ",\n"), NULL, 16);
                     }
                     translateN2000(&e2k, dec);
-                    if (filterPGN(dec)) printf("%s\n", dec);
+                    if (filterPGN(dec)) fprintf(output, "%s\n", dec);
                 }
                 fclose(in);
             }
@@ -276,7 +283,7 @@ int main(int argc, char *argv[]) {
                     int msg = deframeN2000(&frame, &enc);
                     if (msg > 0) {
                         translateN2000(&enc, dec);
-                        if (filterPGN(dec)) printf("%s\n", dec);
+                        if (filterPGN(dec)) fprintf(output, "%s\n", dec);
                     }
                 }
                 perror("CAN read");
@@ -306,7 +313,7 @@ int main(int argc, char *argv[]) {
                     int msg = deframeN2000(&frame, &enc);
                     if (msg > 0) {
                         translateN2000(&enc, dec);
-                        if (filterPGN(dec)) printf("%s\n", dec);
+                        if (filterPGN(dec)) fprintf(output, "%s\n", dec);
                     }
                 }
                 fclose(in);
@@ -349,11 +356,11 @@ int main(int argc, char *argv[]) {
                 while (fgets(buf, 1000, in) != NULL) {
                     if ((strlen(buf) > 10) && (strlen(buf) < 85)) {
                         if (filter == NULL) {
-                            printf("%s\n", translateN0183(buf, dec));
+                            fprintf(output, "%s\n", translateN0183(buf, dec));
                         } else {
                             for (int i = 0; *filters[i].nsf != 0; i++) {
                                 if (strncmp(&buf[3], filters[i].nsf, 3) == 0) {
-                                    printf("%s\n", translateN0183(buf, dec));
+                                    fprintf(output, "%s\n", translateN0183(buf, dec));
                                 }
                             }
                         }
