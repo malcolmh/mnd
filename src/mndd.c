@@ -361,6 +361,8 @@ int main(int argc, char *argv[]) {
                             for (int i = 0; *filters[i].nsf != 0; i++) {
                                 if (strncmp(&buf[3], filters[i].nsf, 3) == 0) {
                                     fprintf(output, "%s\n", translateN0183(buf, dec));
+                                    printf("%s\n", dec);
+                                    fflush(output);
                                 }
                             }
                         }
