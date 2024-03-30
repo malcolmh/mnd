@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
                 filter = optarg;
                 break;
             case 'o':
-                if ((output = fopen(optarg, "w+")) < 0) {
+                if ((output = fopen(optarg, "a")) < 0) {
                     perror("Output open");
                     return 1;
                 }
