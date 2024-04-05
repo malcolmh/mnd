@@ -2,9 +2,9 @@
  ============================================================================
  Name        : mnde.c
  Author      : Malcolm Herring
- Version     : 0.1
+ Version     : 1.0
  Description : Marine Network Data Encoder
- Copyright   : © 2016 Malcolm Herring.
+ Copyright   : © 2016,2024 Malcolm Herring.
 
  mnde is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by

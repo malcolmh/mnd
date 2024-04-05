@@ -2,9 +2,9 @@
  ============================================================================
  Name        : mndd.c
  Author      : Malcolm Herring
- Version     : 0.2
+ Version     : 1.0
  Description : Marine Network Data Decoder
- Copyright   : © 2016,2023 Malcolm Herring.
+ Copyright   : © 2016,2024 Malcolm Herring.
 
  mndd is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
