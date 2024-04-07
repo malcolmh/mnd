@@ -208,9 +208,13 @@ int main(int argc, char *argv[]) {
                                         }
                                         translateN2000(&e2k, dec);
                                         if (strlen(dec) > 3) {
-                                            if (filterPGN(dec)) fprintf(output, "%s\n", dec);
+                                            if (filterPGN(dec)) {
+                                                fprintf(output, "%s\n", dec);
+                                                fflush(output);
+                                            }
                                         } else {
                                             fprintf(output, "*** NGT Checksum error ***\n");
+                                            fflush(output);
                                         }
                                     }
                                     state = NGT_CC0;
@@ -246,7 +250,10 @@ int main(int argc, char *argv[]) {
                         e2k.msg[i] = strtol(strtok(NULL, ",\n"), NULL, 16);
                     }
                     translateN2000(&e2k, dec);
-                    if (filterPGN(dec)) fprintf(output, "%s\n", dec);
+                    if (filterPGN(dec)) {
+                        fprintf(output, "%s\n", dec);
+                        fflush(output);
+                    }
                 }
                 fclose(in);
             }
@@ -283,7 +290,10 @@ int main(int argc, char *argv[]) {
                     int msg = deframeN2000(&frame, &enc);
                     if (msg > 0) {
                         translateN2000(&enc, dec);
-                        if (filterPGN(dec)) fprintf(output, "%s\n", dec);
+                        if (filterPGN(dec)) {
+                            fprintf(output, "%s\n", dec);
+                            fflush(output);
+                        }
                     }
                 }
                 perror("CAN read");
@@ -313,7 +323,10 @@ int main(int argc, char *argv[]) {
                     int msg = deframeN2000(&frame, &enc);
                     if (msg > 0) {
                         translateN2000(&enc, dec);
-                        if (filterPGN(dec)) fprintf(output, "%s\n", dec);
+                        if (filterPGN(dec)) {
+                            fprintf(output, "%s\n", dec);
+                            fflush(output);
+                        }
                     }
                 }
                 fclose(in);
@@ -357,6 +370,7 @@ int main(int argc, char *argv[]) {
                     if ((strlen(buf) > 10) && (strlen(buf) < 85)) {
                         if (filter == NULL) {
                             fprintf(output, "%s\n", translateN0183(buf, dec));
+                            fflush(output);
                         } else {
                             for (int i = 0; *filters[i].nsf != 0; i++) {
                                 if (strncmp(&buf[3], filters[i].nsf, 3) == 0) {
