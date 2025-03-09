@@ -4,7 +4,7 @@
  Author      : Malcolm Herring
  Version     : 1.0
  Description : Marine Network Data Decoder
- Copyright   : © 2016,2024 Malcolm Herring.
+ Copyright   : © 2016,2025 Malcolm Herring.
 
  mndd is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -331,6 +331,64 @@ int main(int argc, char *argv[]) {
                 }
                 fclose(in);
             }
+        } else if (strcmp(type, "wav") == 0) {
+
+        /* WAV input*/
+
+        S_2000 frame;
+        E_2000 enc;
+
+        int len;
+        uint8_t init[] = {0xaa, 0x55, 0x12, 0x05, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0, 0, 0, 0, 0x1a};
+        struct termios config;
+
+        if ((dev = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK)) == -1) {
+            perror("WAV open");
+            return 1;
+        }
+        if (tcgetattr(dev, &config) < 0) {
+            perror("TTY tcgetattr");
+            return 1;
+        }
+        config.c_cflag &= ~CBAUD;
+        config.c_cflag = CS8 | CSTOPB;
+        config.c_iflag = IGNPAR;
+        config.c_oflag = 0;
+        config.c_lflag = 0;
+        config.c_ispeed = B2000000;
+        config.c_ospeed = B2000000;
+
+        if (tcsetattr(dev, TCSANOW, &config) < 0) {
+            perror("TTY tcsetattr");
+            return 1;
+        }
+        if (write(dev, init, sizeof(init)) < 0) {
+            perror("Write initr");
+            return 1;
+        }
+
+        do {
+            while ((len = read(dev, buf, 500)) != 0) {
+                if ((len > 2) && (len <= 15)) {
+                    frame.hdr = (((((buf[5] << 8) + buf[4]) << 8) + buf[3]) << 8) + buf[2];
+                    frame.len = buf[1] & 0xf;
+                    for (int i = 5; i < len; i++) {
+                        frame.dat[i-6] = buf[i];
+                    }
+                    int msg = deframeN2000(&frame, &enc);
+                    if (msg > 0) {
+                        translateN2000(&enc, dec);
+                        if (filterPGN(dec)) {
+                            fprintf(output, "%s\n", dec);
+                            fflush(output);
+                        }
+                    }
+                }
+            }
+        } while (errno == EAGAIN);
+        perror("NGT read");
+        close(dev);
+        return 1;
 
         } else if (strcmp(type, "tty") == 0) {
 
@@ -390,7 +448,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "===========================\n");
         fprintf(stderr, "Marine Network Data Decoder\n");
         fprintf(stderr, "===========================\n");
-        fprintf(stderr, "Usage: mndd {tty|can|ngt} [-d <device> [-s <speed>]] [-f <filters>]\n");
+        fprintf(stderr, "Usage: mndd {tty|can|ngt|wav} [-d <device> [-s <speed>]] [-f <filters>]\n");
         fprintf(stderr, "Default Input from stdin, Output to stdout\n");
         fprintf(stderr, "Default decoding is N0183\n");
         fprintf(stderr, "tty: N0183 input from serial port (ASCII data)\n");
@@ -399,6 +457,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "  (if no device, input from actisense-serial log file/pipe on stdin)\n");
         fprintf(stderr, "can: N2000 input from SocketCAN (Byte aligned binary data)\n");
         fprintf(stderr, "  (if no device, input from candump log file/pipe on stdin)\n");
+        fprintf(stderr, "wav: N2000 input from Waveshare USB-CAN-A (Byte aligned binary data)\n");
+        fprintf(stderr, "  (if no device, input from xxx/pipe on stdin)\n");
         fprintf(stderr, "filters: comma separated list of sentence formatters or PGNs\n");
     }
     close(dev);
