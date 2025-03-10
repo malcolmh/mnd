@@ -141,7 +141,8 @@ int main(int argc, char *argv[]) {
                 attr.c_cc[VTIME] = 0;
                 tcflush(dev, TCIFLUSH);
                 tcsetattr(dev, TCSANOW, &attr);
-                uint8_t init[] = { 0x10, 0x02, 0xA1, 0x03, 0x11, 0x02, 0x00, 0x49, 0x10, 0x03 };
+                uint8_t init[] = { 0x10, 0x02, 0xA1, 0x03, 0x11, 0x02, 0x00,
+                        0x49, 0x10, 0x03 };
                 write(dev, init, sizeof(init));
                 sleep(1);
                 E_2000 e2k;
@@ -198,7 +199,10 @@ int main(int argc, char *argv[]) {
                                 } else {
                                     chk += ch;
                                     if ((chk & 0xff) == 0) {
-                                        e2k.pgn = e2k.msg[1] + ((e2k.msg[2] + (e2k.msg[3] << 8)) << 8);
+                                        e2k.pgn = e2k.msg[1]
+                                                + ((e2k.msg[2]
+                                                        + (e2k.msg[3] << 8))
+                                                        << 8);
                                         e2k.pri = e2k.msg[0];
                                         e2k.dst = e2k.msg[4];
                                         e2k.src = e2k.msg[5];
@@ -213,7 +217,8 @@ int main(int argc, char *argv[]) {
                                                 fflush(output);
                                             }
                                         } else {
-                                            fprintf(output, "*** NGT Checksum error ***\n");
+                                            fprintf(output,
+                                                    "*** NGT Checksum error ***\n");
                                             fflush(output);
                                         }
                                     }
@@ -315,7 +320,8 @@ int main(int argc, char *argv[]) {
                     frame.hdr = hdr;
                     strtok(NULL, " ");
                     frame.len = 0;
-                    for (char *body = strtok(NULL, " "); body != NULL; body = strtok(NULL, " ")) {
+                    for (char *body = strtok(NULL, " "); body != NULL; body =
+                            strtok(NULL, " ")) {
                         unsigned int byte = 0;
                         sscanf(body, "%02X", &byte);
                         frame.dat[frame.len++] = byte;
@@ -333,62 +339,64 @@ int main(int argc, char *argv[]) {
             }
         } else if (strcmp(type, "wav") == 0) {
 
-        /* WAV input*/
+            /* WAV input*/
 
-        S_2000 frame;
-        E_2000 enc;
+            S_2000 frame;
+            E_2000 enc;
 
-        int len;
-        uint8_t init[] = {0xaa, 0x55, 0x12, 0x05, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0, 0, 0, 0, 0x1a};
-        struct termios config;
+            int len;
+            uint8_t init[] = { 0xaa, 0x55, 0x12, 0x05, 0x02, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0x01, 0, 0, 0, 0, 0x1a };
+            struct termios config;
 
-        if ((dev = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK)) == -1) {
-            perror("WAV open");
-            return 1;
-        }
-        if (tcgetattr(dev, &config) < 0) {
-            perror("TTY tcgetattr");
-            return 1;
-        }
-        config.c_cflag &= ~CBAUD;
-        config.c_cflag = CS8 | CSTOPB;
-        config.c_iflag = IGNPAR;
-        config.c_oflag = 0;
-        config.c_lflag = 0;
-        config.c_ispeed = B2000000;
-        config.c_ospeed = B2000000;
+            if ((dev = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK)) == -1) {
+                perror("WAV open");
+                return 1;
+            }
+            if (tcgetattr(dev, &config) < 0) {
+                perror("TTY tcgetattr");
+                return 1;
+            }
+            config.c_cflag &= ~CBAUD;
+            config.c_cflag = CS8 | CSTOPB;
+            config.c_iflag = IGNPAR;
+            config.c_oflag = 0;
+            config.c_lflag = 0;
+            config.c_ispeed = B2000000;
+            config.c_ospeed = B2000000;
 
-        if (tcsetattr(dev, TCSANOW, &config) < 0) {
-            perror("TTY tcsetattr");
-            return 1;
-        }
-        if (write(dev, init, sizeof(init)) < 0) {
-            perror("Write initr");
-            return 1;
-        }
+            if (tcsetattr(dev, TCSANOW, &config) < 0) {
+                perror("TTY tcsetattr");
+                return 1;
+            }
+            if (write(dev, init, sizeof(init)) < 0) {
+                perror("Write initr");
+                return 1;
+            }
 
-        do {
-            while ((len = read(dev, buf, 500)) != 0) {
-                if ((len > 2) && (len <= 15)) {
-                    frame.hdr = (((((buf[5] << 8) + buf[4]) << 8) + buf[3]) << 8) + buf[2];
-                    frame.len = buf[1] & 0xf;
-                    for (int i = 5; i < len; i++) {
-                        frame.dat[i-6] = buf[i];
-                    }
-                    int msg = deframeN2000(&frame, &enc);
-                    if (msg > 0) {
-                        translateN2000(&enc, dec);
-                        if (filterPGN(dec)) {
-                            fprintf(output, "%s\n", dec);
-                            fflush(output);
+            do {
+                while ((len = read(dev, buf, 500)) != 0) {
+                    if ((len > 2) && (len <= 15)) {
+                        frame.hdr = (((((buf[5] << 8) + buf[4]) << 8) + buf[3])
+                                << 8) + buf[2];
+                        frame.len = buf[1] & 0xf;
+                        for (int i = 5; i < len; i++) {
+                            frame.dat[i - 6] = buf[i];
+                        }
+                        int msg = deframeN2000(&frame, &enc);
+                        if (msg > 0) {
+                            translateN2000(&enc, dec);
+                            if (filterPGN(dec)) {
+                                fprintf(output, "%s\n", dec);
+                                fflush(output);
+                            }
                         }
                     }
                 }
-            }
-        } while (errno == EAGAIN);
-        perror("NGT read");
-        close(dev);
-        return 1;
+            } while (errno == EAGAIN);
+            perror("NGT read");
+            close(dev);
+            return 1;
 
         } else if (strcmp(type, "tty") == 0) {
 
@@ -432,7 +440,8 @@ int main(int argc, char *argv[]) {
                         } else {
                             for (int i = 0; *filters[i].nsf != 0; i++) {
                                 if (strncmp(&buf[3], filters[i].nsf, 3) == 0) {
-                                    fprintf(output, "%s\n", translateN0183(buf, dec));
+                                    fprintf(output, "%s\n",
+                                            translateN0183(buf, dec));
                                     fflush(output);
                                 }
                             }
@@ -448,18 +457,26 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "===========================\n");
         fprintf(stderr, "Marine Network Data Decoder\n");
         fprintf(stderr, "===========================\n");
-        fprintf(stderr, "Usage: mndd {tty|can|ngt|wav} [-d <device> [-s <speed>]] [-f <filters>]\n");
+        fprintf(stderr,
+                "Usage: mndd {tty|can|ngt|wav} [-d <device> [-s <speed>]] [-f <filters>]\n");
         fprintf(stderr, "Default Input from stdin, Output to stdout\n");
         fprintf(stderr, "Default decoding is N0183\n");
         fprintf(stderr, "tty: N0183 input from serial port (ASCII data)\n");
-        fprintf(stderr, "  (if no device, input from text file/pipe on stdin)\n");
-        fprintf(stderr, "ngt: N2000 input from Actisense NGT-1 (Byte aligned binary data)\n");
-        fprintf(stderr, "  (if no device, input from actisense-serial log file/pipe on stdin)\n");
-        fprintf(stderr, "can: N2000 input from SocketCAN (Byte aligned binary data)\n");
-        fprintf(stderr, "  (if no device, input from candump log file/pipe on stdin)\n");
-        fprintf(stderr, "wav: N2000 input from Waveshare USB-CAN-A (Byte aligned binary data)\n");
+        fprintf(stderr,
+                "  (if no device, input from text file/pipe on stdin)\n");
+        fprintf(stderr,
+                "ngt: N2000 input from Actisense NGT-1 (Byte aligned binary data)\n");
+        fprintf(stderr,
+                "  (if no device, input from actisense-serial log file/pipe on stdin)\n");
+        fprintf(stderr,
+                "can: N2000 input from SocketCAN (Byte aligned binary data)\n");
+        fprintf(stderr,
+                "  (if no device, input from candump log file/pipe on stdin)\n");
+        fprintf(stderr,
+                "wav: N2000 input from Waveshare USB-CAN-A (Byte aligned binary data)\n");
         fprintf(stderr, "  (if no device, input from xxx/pipe on stdin)\n");
-        fprintf(stderr, "filters: comma separated list of sentence formatters or PGNs\n");
+        fprintf(stderr,
+                "filters: comma separated list of sentence formatters or PGNs\n");
     }
     close(dev);
     return 0;
