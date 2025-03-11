@@ -43,6 +43,8 @@
 
 #include <mnd/mnd.h>
 
+void wav_init(int dev);
+
 typedef union {
     char nsf[4];
     int pgn;
@@ -345,34 +347,12 @@ int main(int argc, char *argv[]) {
             E_2000 enc;
 
             int len;
-            uint8_t init[] = { 0xaa, 0x55, 0x12, 0x05, 0x02, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0x01, 0, 0, 0, 0, 0x1a };
-            struct termios config;
 
             if ((dev = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK)) == -1) {
                 perror("WAV open");
                 return 1;
             }
-            if (tcgetattr(dev, &config) < 0) {
-                perror("TTY tcgetattr");
-                return 1;
-            }
-            config.c_cflag &= ~CBAUD;
-            config.c_cflag = CS8 | CSTOPB;
-            config.c_iflag = IGNPAR;
-            config.c_oflag = 0;
-            config.c_lflag = 0;
-            config.c_ispeed = B2000000;
-            config.c_ospeed = B2000000;
-
-            if (tcsetattr(dev, TCSANOW, &config) < 0) {
-                perror("TTY tcsetattr");
-                return 1;
-            }
-            if (write(dev, init, sizeof(init)) < 0) {
-                perror("Write initr");
-                return 1;
-            }
+            wav_init(dev);
 
             do {
                 while ((len = read(dev, buf, 500)) != 0) {
